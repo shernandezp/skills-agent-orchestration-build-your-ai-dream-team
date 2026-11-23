@@ -1,0 +1,52 @@
+{
+  "projects": [
+    {
+      "name": "Contributor Onboarding",
+      "owner": "Avery Chen",
+      "status": "Active",
+      "recentActivity": "Published the updated first-week contributor checklist.",
+      "priority": "High",
+      "summary": "Streamlines setup and gives new contributors a clear path to their first merged change."
+    },
+    {
+      "name": "Documentation Refresh",
+      "owner": "Maya Patel",
+      "status": "In Review",
+      "recentActivity": "Opened the final review for the architecture and workflow guides.",
+      "priority": "Medium",
+      "summary": "Updates core guides so contributors can find reliable, current project information."
+    },
+    {
+      "name": "Accessibility Audit",
+      "owner": "Jordan Lee",
+      "status": "At Risk",
+      "recentActivity": "Logged keyboard navigation gaps found during the latest product walkthrough.",
+      "priority": "High",
+      "summary": "Identifies and resolves barriers across the contributor-facing experience."
+    },
+    {
+      "name": "Release Automation",
+      "owner": "Sam Rivera",
+      "status": "Active",
+      "recentActivity": "Connected release notes generation to the staging workflow.",
+      "priority": "Medium",
+      "summary": "Makes release preparation repeatable, visible, and easier for maintainers to verify."
+    },
+    {
+      "name": "Community Office Hours",
+      "owner": "Nia Thompson",
+      "status": "Completed",
+      "recentActivity": "Shared recordings and follow-up issues from the latest community session.",
+      "priority": "Low",
+      "summary": "Creates a recurring space for questions, feedback, and contributor connection."
+    },
+    {
+      "name": "Dependency Health",
+      "owner": "Eli Morgan",
+      "status": "Planned",
+      "recentActivity": "Prepared an inventory of aging dependencies and maintenance owners.",
+      "priority": "Medium",
+      "summary": "Establishes a regular cadence for reviewing and updating project dependencies."
+    }
+  ]
+}

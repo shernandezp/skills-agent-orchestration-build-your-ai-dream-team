@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Project Pulse gives contributors a clear view of project ownership, status, activity, and priority.">
+    <title>Project Pulse</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-content">
+        <p class="eyebrow">Team dashboard</p>
+        <h1>Project Pulse</h1>
+        <p class="header-summary">
+          One clear view of what the team is building, who is leading it, and what needs attention.
+        </p>
+      </div>
+    </header>
+
+    <main class="dashboard">
+      <section aria-labelledby="projects-heading">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Portfolio overview</p>
+            <h2 id="projects-heading">Projects</h2>
+          </div>
+          <p id="project-count" class="project-count" aria-live="polite"></p>
+        </div>
+
+        <div id="loading-state" class="dashboard-state loading-state" role="status">
+          <span class="state-icon" aria-hidden="true"></span>
+          <p>Loading project updates…</p>
+        </div>
+
+        <div id="error-state" class="dashboard-state error-state" role="alert" hidden>
+          <h3>Projects could not be loaded</h3>
+          <p id="error-message">Please try again in a moment.</p>
+          <button id="retry-button" type="button">Try again</button>
+        </div>
+
+        <div id="empty-state" class="dashboard-state empty-state" hidden>
+          <h3>No projects to show</h3>
+          <p>New project updates will appear here when they are available.</p>
+        </div>
+
+        <div id="projects-grid" class="project-grid" aria-label="Project list" hidden></div>
+      </section>
+    </main>
+
+    <noscript>
+      <div class="noscript-message">
+        JavaScript is required to load project information for Project Pulse.
+      </div>
+    </noscript>
+
+    <script>
+      (function () {
+        "use strict";
+
+        var dataUrl = "project-data.json";
+        var requiredFields = ["name", "owner", "status", "recentActivity", "priority"];
+        var loadingState = document.getElementById("loading-state");
+        var errorState = document.getElementById("error-state");
+        var errorMessage = document.getElementById("error-message");
+        var emptyState = document.getElementById("empty-state");
+        var projectsGrid = document.getElementById("projects-grid");
+        var projectCount = document.getElementById("project-count");
+        var retryButton = document.getElementById("retry-button");
+
+        function setState(activeState) {
+          loadingState.hidden = activeState !== "loading";
+          errorState.hidden = activeState !== "error";
+          emptyState.hidden = activeState !== "empty";
+          projectsGrid.hidden = activeState !== "ready";
+        }
+
+        function createTextElement(tagName, className, text) {
+          var element = document.createElement(tagName);
+          element.className = className;
+          element.textContent = text;
+          return element;
+        }
+
+        function validateProjects(data) {
+          if (!data || !Array.isArray(data.projects)) {
+            throw new Error("The project data must contain a top-level projects array.");
+          }
+
+          return data.projects.map(function (project, index) {
+            requiredFields.forEach(function (field) {
+              if (typeof project[field] !== "string" || project[field].trim() === "") {
+                throw new Error("Project " + (index + 1) + " has an invalid or missing " + field + " field.");
+              }
+            });
+
+            return project;
+          });
+        }
+
+        function addDetail(list, term, value, valueClass) {
+          var group = document.createElement("div");
+          group.className = "project-detail";
+          group.appendChild(createTextElement("dt", "detail-label", term));
+          group.appendChild(createTextElement("dd", valueClass || "detail-value", value));
+          list.appendChild(group);
+        }
+
+        function createProjectCard(project, index) {
+          var card = document.createElement("article");
+          var titleId = "project-title-" + (index + 1);
+          card.className = "project-card";
+          card.setAttribute("aria-labelledby", titleId);
+
+          var cardHeader = document.createElement("div");
+          cardHeader.className = "project-card-header";
+
+          var title = createTextElement("h3", "project-name", project.name);
+          title.id = titleId;
+          cardHeader.appendChild(title);
+          cardHeader.appendChild(
+            createTextElement("span", "status-badge status-" + project.status.toLowerCase().replace(/\s+/g, "-"), project.status)
+          );
+
+          var details = document.createElement("dl");
+          details.className = "project-details";
+          addDetail(details, "Owner", project.owner);
+          addDetail(details, "Status", project.status, "detail-value status-text");
+          addDetail(details, "Recent activity", project.recentActivity);
+          addDetail(details, "Priority", project.priority, "detail-value priority-label");
+
+          card.appendChild(cardHeader);
+          card.appendChild(details);
+
+          if (project.summary && typeof project.summary === "string") {
+            card.appendChild(createTextElement("p", "project-summary", project.summary));
+          }
+
+          return card;
+        }
+
+        function renderProjects(projects) {
+          projectsGrid.replaceChildren();
+          projectCount.textContent = projects.length + (projects.length === 1 ? " project" : " projects");
+
+          if (projects.length === 0) {
+            setState("empty");
+            return;
+          }
+
+          var fragment = document.createDocumentFragment();
+          projects.forEach(function (project, index) {
+            fragment.appendChild(createProjectCard(project, index));
+          });
+          projectsGrid.appendChild(fragment);
+          setState("ready");
+        }
+
+        async function loadProjects() {
+          setState("loading");
+          projectCount.textContent = "";
+          errorMessage.textContent = "Please try again in a moment.";
+
+          try {
+            var response = await fetch(dataUrl, { cache: "no-store" });
+            if (!response.ok) {
+              throw new Error("The server returned " + response.status + " while loading project data.");
+            }
+
+            var data = await response.json();
+            renderProjects(validateProjects(data));
+          } catch (error) {
+            var detail = error instanceof Error ? error.message : "An unexpected error occurred.";
+            errorMessage.textContent = detail;
+            setState("error");
+          }
+        }
+
+        retryButton.addEventListener("click", loadProjects);
+        loadProjects();
+      })();
+    </script>
+  </body>
+</html>
